@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "test": "jest --coverage --noStackTrace --silent"
+    "test": "jest --coverage",
+    "test:bills" : "jest --coverage -i __tests__/Bills.js -t",
+    "test:newbills" : "jest --coverage -i __tests__/NewBill.js -t"
   },
   "jest": {
     "verbose": false,

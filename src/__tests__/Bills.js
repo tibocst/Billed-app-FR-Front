@@ -2,11 +2,19 @@
  * @jest-environment jsdom
  */
 
+$.fn.modal = jest.fn();
+import userEvent from "@testing-library/user-event";
 import {screen, waitFor} from "@testing-library/dom"
 import BillsUI from "../views/BillsUI.js"
 import { bills } from "../fixtures/bills.js"
-import { ROUTES_PATH} from "../constants/routes.js";
+import Bills from "../containers/Bills.js"
+import { ROUTES_PATH } from "../constants/routes.js";
 import {localStorageMock} from "../__mocks__/localStorage.js";
+import mockStore from "../__mocks__/store.js";
+import mockStoreError from "../__mocks__/storeError.js";
+import '@testing-library/jest-dom'
+
+
 
 import router from "../app/Router.js";
 
@@ -25,7 +33,7 @@ describe("Given I am connected as an employee", () => {
       window.onNavigate(ROUTES_PATH.Bills)
       await waitFor(() => screen.getByTestId('icon-window'))
       const windowIcon = screen.getByTestId('icon-window')
-      //to-do write expect expression
+      expect(windowIcon.classList.contains("active-icon")).toBeTruthy()
 
     })
     test("Then bills should be ordered from earliest to latest", () => {
@@ -35,5 +43,85 @@ describe("Given I am connected as an employee", () => {
       const datesSorted = [...dates].sort(antiChrono)
       expect(dates).toEqual(datesSorted)
     })
+    test("Then if i click on newBills buton it should load newBills page", () => {
+
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.append(root)
+      router()
+      window.onNavigate(ROUTES_PATH.Bills)
+      const buttonNewBill = document.querySelector(`button[data-testid="btn-new-bill"]`)
+      buttonNewBill.click()
+      expect(document.getElementById('btn-send-bill')).toBeInTheDocument()
+    })
+    test("Then if i click on iconEye it should open a modal", async () => {
+      
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.append(root)
+      router()
+      const test = new Bills({
+        document,
+        onNavigate,
+        store: mockStore,
+        localStorage: window.localStorage,
+      });
+      document.body.innerHTML = BillsUI({ data: bills });
+      await waitFor(() => screen.getAllByTestId("icon-window"));
+      const buttonEye = screen.getAllByTestId("icon-eye")[1];
+      console.log(buttonEye)
+      const jestIconEyes = jest.fn((eye) => test.handleClickIconEye(eye));
+      buttonEye.addEventListener("click", () => jestIconEyes(buttonEye));
+      userEvent.click(buttonEye);
+      expect(jestIconEyes).toHaveBeenCalled();
+      // console.log(Array.from(document.querySelector('#modaleFile').classList))
+      
+    })
+    test("Then getBills should be called", async () => {
+      
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+      
+      const test = new Bills({
+        document,
+        onNavigate,
+        store: mockStore,
+        localStorage: window.localStorage,
+      });
+
+      const jestFn = jest.fn(() => test.getBills());    
+      const resFn = jestFn();
+      expect(resFn.length).toBe(mockStore.length);
+
+      const testError = new Bills({
+        document,
+        onNavigate,
+        store: mockStoreError,
+        localStorage: window.localStorage,
+      });
+
+      const jestFnError = jest.fn(() => testError.getBills());    
+      const resFnError = jestFnError();
+
+      expect(resFnError).toEqual(mockStoreError.bills().list());
+      
+    })
+    
   })
 })

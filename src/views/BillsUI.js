@@ -1,6 +1,7 @@
 import VerticalLayout from './VerticalLayout.js'
 import ErrorPage from "./ErrorPage.js"
 import LoadingPage from "./LoadingPage.js"
+import { formatDate } from "../app/format.js"
 
 import Actions from './Actions.js'
 
@@ -19,10 +20,17 @@ const row = (bill) => {
     `)
   }
 
-const rows = (data) => {
-  return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
-}
+  
 
+  const rows = (data) => {
+    return data && data.length
+      ? data
+          .sort((a, b) => ((a.unformatedDate || a.date) < (b.unformatedDate || b.date) ? 1 : -1))
+          .map((bill) => row(bill))
+          .join("")
+      : "";
+  };
+  
 export default ({ data: bills, loading, error }) => {
   
   const modal = () => (`
