@@ -14,6 +14,8 @@ import mockStore from "../__mocks__/store.js";
 import mockStoreError from "../__mocks__/storeError.js";
 import '@testing-library/jest-dom'
 
+jest.mock("../app/store", () => mockStore)
+
 
 
 import router from "../app/Router.js";
@@ -124,4 +126,36 @@ describe("Given I am connected as an employee", () => {
     })
     
   })
+
+  describe("When an error occurs on API", () => {
+    beforeEach(() => {
+      jest.spyOn(mockStore, "bills")
+      Object.defineProperty(
+          window,
+          'localStorage',
+          { value: localStorageMock }
+      )
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.appendChild(root)
+      router()
+    })
+    test("fetches bills from an API and fails with 404 message error", async () => {
+
+      mockStore.bills.mockImplementationOnce(() => {
+        return {
+          list : () =>  {
+            return Promise.reject(new Error("Erreur 404"))
+          }
+        }})
+      window.onNavigate(ROUTES_PATH.Bills)
+      await new Promise(process.nextTick);
+      const message = await screen.getByText(/Erreur 404/)
+      expect(message).toBeTruthy()
+    })
+  })
+
 })
