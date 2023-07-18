@@ -1,8 +1,9 @@
 {
   "scripts": {
-    "test": "jest --coverage",
+    "test": "jest --coverage --silent",
     "test:bills" : "jest --coverage -i __tests__/Bills.js -t",
-    "test:newbills" : "jest --coverage -i __tests__/NewBill.js -t"
+    "test:newbills" : "jest --coverage -i __tests__/NewBill.js -t",
+    "test:double" : "jest -- __tests__/NewBill.js -- __tests__/Bill.js"
   },
   "jest": {
     "verbose": false,
