@@ -25,7 +25,14 @@ export default class NewBill {
     formData.append('file', file)
     formData.append('email', email)
 
-    this.store
+    const regexp = new RegExp(/(\.jpg|\.jpeg|\.png|\.gif)$/, 'i')
+    
+    if(!regexp.test(file.name)){
+      window.alert("Veuillez choisir une extension jpg, jpeg, png ou gif!")
+      e.target.value = ''
+    }
+    else {
+      this.store
       .bills()
       .create({
         data: formData,
@@ -38,10 +45,10 @@ export default class NewBill {
         this.fileUrl = fileUrl
         this.fileName = fileName
       }).catch(error => console.error(error))
+    }
   }
   handleSubmit = e => {
     e.preventDefault()
-    console.log('e.target.querySelector(`input[data-testid="datepicker"]`).value', e.target.querySelector(`input[data-testid="datepicker"]`).value)
     const email = JSON.parse(localStorage.getItem("user")).email
     const bill = {
       email,

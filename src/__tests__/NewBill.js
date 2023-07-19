@@ -104,7 +104,7 @@ describe("Given I am connected as an employee", () => {
       const buttonFile = screen.getByTestId("file")
 
       fireEvent.change(buttonFile, {
-        target: { files: [new File(['test'], 'test.png', { type: 'image/png' })] },
+        target: { files: [new File(['test'], 'test.png', { type: 'image/png' })] }
       });
       await waitFor(() => {
         expect(newBill.fileUrl).toEqual('https://localhost:3456/images/test.jpg')
